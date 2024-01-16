@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://xmlns.jcp.org/xml/ns/javaee" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd" id="WebApp_ID" version="3.1">
+  <display-name>JSPBook</display-name>
+  <welcome-file-list>
+    <welcome-file>index.html</welcome-file>
+    <welcome-file>index.htm</welcome-file>
+    <welcome-file>index.jsp</welcome-file>
+    <welcome-file>default.html</welcome-file>
+    <welcome-file>default.htm</welcome-file>
+    <welcome-file>default.jsp</welcome-file>
+  </welcome-file-list>
+  <!-- 시큐리티 역할(role) 설정 -->
+  <security-role>
+  	<role-name>tomcat</role-name>
+  </security-role>
+  <security-role>
+  	<role-name>role1</role-name>
+  </security-role>
+  <security-role>
+  	<role-name>manager</role-name>
+  </security-role>
+  <security-role>
+  	<role-name>admin</role-name>
+  </security-role>
+  <!-- 시큐리티의 제약 사항(constraint)을 설정 -->
+  <security-constraint>
+  	<!-- 이 url을 요청하려면 role1 권한을 갖고 있어야 함 -->
+  	<web-resource-collection>
+  		<web-resource-name>JSPBook</web-resource-name>
+  		<url-pattern>/ch10/security01.jsp</url-pattern>
+  		<http-method>GET</http-method>
+  	</web-resource-collection>
+  	<auth-constraint>
+  		<description></description>
+  		<role-name>role1</role-name>
+  	</auth-constraint>
+  </security-constraint>
+  <!-- /ch10/security02.jsp URL에 접근하려면
+  	tomcat권한을 갖고있는 id(tomcat, both)로 로그인 해야 함 -->
+  <security-constraint>
+  	<web-resource-collection>
+  		<web-resource-name>JSPBook</web-resource-name>
+  		<url-pattern>/ch10/security02.jsp</url-pattern>
+  		<http-method>GET</http-method>
+  	</web-resource-collection>
+  	<auth-constraint>
+  		<description></description>
+  		<role-name>tomcat</role-name>
+  	</auth-constraint>
+  </security-constraint>
+  <!-- 상품 등록을 하려면 admin 권한(role)이 있어야 함. -->
+  <security-constraint>
+  	<web-resource-collection>
+		<web-resource-name>JSPBook</web-resource-name>
+		<url-pattern>/addProduct.jsp</url-pattern>
+		<!-- HTTP 요청 방식(GET, POST, PUT) -->
+		<http-method>GET</http-method>
+  	</web-resource-collection>
+  	<auth-constraint>
+  		<description></description>
+  		<role-name>admin</role-name>
+  	</auth-constraint>
+  </security-constraint>
+  <!-- 아이디/비밀번호를 입력할 수 있는 기본 로그인 창 -->
+  <login-config>
+  	<!-- <auth-method>BASIC</auth-method> -->
+  	<auth-method>FORM</auth-method>
+  	<form-login-config>
+  		<form-login-page>/login.jsp</form-login-page><!-- 로그인 화면 -->
+  		<form-error-page>/login_failed.jsp</form-error-page><!-- 로그인 실패 시 요청됨 -->
+  	</form-login-config>
+  </login-config>
+  <!-- 
+	[주요 오류 코드 종류]
+	200 : 요청이 정상적으로 처리됨
+	307 : 임시로 페이지가 리다이렉트 됨
+	400 : 클라이언트의 요청이 잘못된 구문으로 구성됨
+	401 : 접근이 허용되지 않음
+	404 : 지정된 URL을 처리하기 위한 자원이 존재하지 않음
+	405 : 요청된 메소드가 허용되지 않음
+	500 : 서버 내부 오류(JSP에서 예외 발생)
+	503 : 서버 과부하나 보수 중인 경우. 서버가 일시적으로 서비시를 제공할 수 없음
+  -->
+  <!-- 오류가 나면 오류 타입에 맞춰 오류 처리 URL로 매핑 -->
+  <error-page>
+	<!-- 오류 코드 설정 
+	오류 코드 : 웹 서버가 제공하는 기본 오류 페이지에 나타나는 404, 500과 같이
+	사용자의 요청이 올바르지 않을 때 출력되는 코드. 응답 상태 코드.
+	
+	JSP페이지에서 발생하는 오류가 web.xml 파일에 설정된 오류 코드와 일치하는
+	경우 오류 코드와 오류 페이지를 보여줌
+     -->
+  	<error-code>404</error-code>
+  	<!-- 오류 URL 설정 -->
+  	<location>/exceptionNoPage.jsp</location>
+  </error-page>
+  <!-- 개발자 오류 -->
+  <error-page>
+  	<!-- 10/0과 같이 잘못된 코드 실행 시 -->
+  	<error-code>500</error-code>
+  	<location>/error/error500.jsp</location>
+  </error-page>
+  <!-- 예외 타입별 오류 페이지 지정 -->
+  <error-page>
+  	<!-- 자바 예외 유형의 정규화된 클래스 이름을 설정하는데 사용 -->
+  	<exception-type>java.lang.NullPointerException</exception-type>
+  	<location>/error/errorNullPointer.jsp</location>
+  </error-page>
+  <!-- Filter 인터페이스의 구현 클래스를 필터로 처리함 -->
+  <filter>
+  	<filter-name>Filter01</filter-name>
+  	<filter-class>kr.or.ddit.filter.AuthenFilter</filter-class>
+  </filter>
+  <!-- Filter01로 연결된 필터를 사용할 요청 URL -->
+  <filter-mapping>
+  	<filter-name>Filter01</filter-name>
+  	<url-pattern>/ch12/filter01_process.jsp</url-pattern>
+  </filter-mapping>
+  <filter>
+  	<filter-name>Filter02</filter-name>
+  	<filter-class>kr.or.ddit.filter.InitParamFilter</filter-class>
+  	<!-- initiate : 초기화
+  	web.xml{param1=admin,param2=java}
+  	-->
+  	<init-param>
+  		<param-name>param1</param-name>
+  		<param-value>admin</param-value>
+  	</init-param>
+  	<init-param>
+  		<param-name>param2</param-name>
+  		<param-value>java</param-value>
+  	</init-param>
+  </filter>
+  <filter-mapping>
+  	<filter-name>Filter02</filter-name>
+  	<url-pattern>/ch12/filter02_process.jsp</url-pattern>
+  </filter-mapping>
+  
+  <filter>
+  	<filter-name>LogFilter</filter-name>
+  	<filter-class>kr.or.ddit.filter.LogFilter</filter-class>
+  </filter>
+  <filter-mapping>
+  	<filter-name>LogFilter</filter-name>
+  	<!-- 모든 요청 -->
+  	<url-pattern>/*</url-pattern>
+  </filter-mapping>
+  
+  <filter>
+  	<filter-name>LogFileFilter</filter-name>
+  	<filter-class>kr.or.ddit.filter.LogFileFilter</filter-class>
+  	<!-- 로그가 저장될 파일의 위치 지정. LogFileFilter의 init()메소드에 파라미터를 보냄 -->
+  	<init-param>
+  		<param-name>filename</param-name>
+  		<param-value>c:\\logs\\webmarket.log</param-value>
+  	</init-param>
+  </filter>
+  <filter-mapping>
+  	<filter-name>LogFileFilter</filter-name>
+  	<!-- 모든 요청 -->
+  	<url-pattern>/*</url-pattern>
+  </filter-mapping>
+  
+   <filter>
+  	<filter-name>LoginCheckFilter</filter-name>
+  	<filter-class>kr.or.ddit.filter.LoginCheckFilter</filter-class>
+  </filter>
+  <filter-mapping>
+  	<filter-name>LoginCheckFilter</filter-name>
+  	<url-pattern>/login_success.jsp</url-pattern>
+  </filter-mapping>
+</web-app>
